@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AutoRepair.Domain;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.Storage
 {
-    interface IUserStorage
+    public interface IUserStorage
     {
         Guid AddUser(string name, int age);
 

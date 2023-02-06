@@ -1,7 +1,6 @@
-using AutoRepairLibrary;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
+using AutoRepair.Domain;
+using AutoRepair.Facade;
+using AutoRepair.StorageInMemory;
 
 namespace AutoRepairTests
 {
@@ -18,7 +17,7 @@ namespace AutoRepairTests
         [TestInitialize]
         public void Initialize()
         {
-            _autoRepairFacade = new AutoRepairFacade(new CarStorage(), new BookingStorage(), new UserStorage());
+            _autoRepairFacade = new AutoRepairFacade(new CarInMemoryStorage(), new BookingInMemoryStorage(), new UserInMemoryStorage());
             _userId = _autoRepairFacade.CreateUser("Васька", 25);
 
             _from = new DateTime(2022, 10, 24, 12, 00, 00);
@@ -29,7 +28,7 @@ namespace AutoRepairTests
         public void AddTruck_AddedTruck()
         {
             //prepare
-            var brand = Brand.Volkswagen;
+            var brand = Brand.BMW;
             var color = Color.White;
             var year = new DateTime(2000, 01, 01);
             var width = 100;
@@ -48,14 +47,13 @@ namespace AutoRepairTests
             Assert.AreEqual(brand, car.Brand);
             Assert.AreEqual(color, car.Color);
             Assert.AreEqual(year, car.Year);
-
         }
 
         [TestMethod]
         public void GetAllTrucks_ReturnTrucks()
         {
             //prepare
-            var brand = Brand.Volkswagen;
+            var brand = Brand.BMW;
             var color = Color.White;
             var year = new DateTime(2000, 01, 01);
             var width = 100;
@@ -79,7 +77,7 @@ namespace AutoRepairTests
             Assert.AreEqual(color, truck.Color);
             Assert.AreEqual(year, truck.Year);
             Assert.AreEqual(expectedTrunkSize, truck.TrunkSize);
-            
+
 
         }
 
@@ -87,7 +85,7 @@ namespace AutoRepairTests
         public void GetAllTruckWithSuitableCapacity_ReturnSuitableTracks()
         {
             //prepare
-            _autoRepairFacade.AddCar(Brand.Volkswagen, Color.Black, new DateTime(2001,01,01),10,5,14);
+            _autoRepairFacade.AddCar(Brand.BMW, Color.White, new DateTime(2001, 01, 01), 10, 5, 14);
             var capacity = 7;
 
             //act
@@ -106,7 +104,7 @@ namespace AutoRepairTests
         public void AddLimousine_AddedLimousine()
         {
             //prepare
-            var brand = Brand.Mersedes;
+            var brand = Brand.BMW;
             var color = Color.White;
             var year = new DateTime(2000, 01, 01);
             var isThereBar = true;
@@ -130,7 +128,7 @@ namespace AutoRepairTests
         public void GetAllLimousine_ReturnLimousine()
         {
             //prepare
-            var brand = Brand.Volkswagen;
+            var brand = Brand.BMW;
             var color = Color.White;
             var year = new DateTime(2000, 01, 01);
             var thereBar = true;
@@ -160,7 +158,7 @@ namespace AutoRepairTests
         public void GetAllLimousines_ReturnCorrectly(bool isThereBar)
         {
             //prepare
-            _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001,01,01), isThereBar);
+            _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01), isThereBar);
 
             //act
             var limousines = _autoRepairFacade.GetAllLimousinesWithBar(isThereBar);
@@ -169,7 +167,7 @@ namespace AutoRepairTests
             var expectedCount = 1;
             var expectedResult = isThereBar;
 
-            var limousine = limousines.Single ();
+            var limousine = limousines.Single();
 
             Assert.AreEqual(expectedCount, limousines.Count);
             Assert.AreEqual(expectedResult, limousine.Bar);
@@ -180,7 +178,7 @@ namespace AutoRepairTests
         public void BookCar_AddBookedCar()
         {
             // act
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             var isBooked = _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
 
             // validation
@@ -201,13 +199,13 @@ namespace AutoRepairTests
         }
 
         [TestMethod]
-        [DataRow(10,13)]
-        [DataRow(12,15)]
-        [DataRow(14,17)]
+        [DataRow(10, 13)]
+        [DataRow(12, 15)]
+        [DataRow(14, 17)]
         public void BookCar_NotSuitableIntervalReturnFalse(int hourFrom, int hourTo)
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             var secondUserId = _autoRepairFacade.CreateUser("Петька", 20);
 
             var newTimeFrom = new DateTime(2022, 10, 24, hourFrom, 00, 00);
@@ -232,7 +230,7 @@ namespace AutoRepairTests
         public void BookCar_SuitableIntervalReturnTrue(int hourFrom, int hourTo)
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
 
             var bookingTimeFrom = new DateTime(2022, 10, 24, hourFrom, 00, 00);
@@ -254,7 +252,7 @@ namespace AutoRepairTests
         public void PickUpCar_ReturnTrue()
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
 
             //act
@@ -274,7 +272,7 @@ namespace AutoRepairTests
         {
             //prepare
             var newUserId = Guid.NewGuid();
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
 
             //act
@@ -293,7 +291,7 @@ namespace AutoRepairTests
         public void PickUpCar_UnknowTimeReturnFalse()
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             var newTime = new DateTime(2022, 10, 24, 13, 00, 00);
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
 
@@ -313,7 +311,7 @@ namespace AutoRepairTests
         public void UserReturnCar_ReturnTrue()
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             var userId = _autoRepairFacade.CreateUser("Васька", 25);
             var from = new DateTime(2022, 10, 24, 12, 00, 00);
             var to = new DateTime(2022, 10, 24, 15, 00, 00);
@@ -336,7 +334,7 @@ namespace AutoRepairTests
         public void UserReturnCar_UnknowUserReturnFalse()
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             var newUserId = Guid.NewGuid();
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
             _autoRepairFacade.PickUpCar(bookingId, _from);
@@ -359,7 +357,7 @@ namespace AutoRepairTests
         public void UserReturnCar_UnknowTimeReturnFalse()
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             var newTime = new DateTime(2022, 10, 24, 13, 00, 00);
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
             _autoRepairFacade.PickUpCar(bookingId, _from);
@@ -376,20 +374,20 @@ namespace AutoRepairTests
             Assert.AreEqual(expectedMachineCount, _autoRepairFacade.GetAllBookings().Count);
             Assert.AreEqual(expectedResult, result);
             Assert.AreEqual(expectedStatusCar, car.IsOnTheRoad);
-           
+
         }
 
         [TestMethod]
         public void GetAllAvailableCars_ReturnCars()
         {
             //prepare
-            var carStorage = new CarStorage();
-            var rentStorage = new BookingStorage();
-            var userStorage = new UserStorage();
+            var carStorage = new CarInMemoryStorage();
+            var rentStorage = new BookingInMemoryStorage();
+            var userStorage = new UserInMemoryStorage();
             var autoRepairFacade = new AutoRepairFacade(carStorage, rentStorage, userStorage);
 
             var brand = Brand.Audi;
-            var color = Color.Black;
+            var color = Color.White;
             var year = new DateTime(2001, 01, 01);
             var carId = autoRepairFacade.AddCar(brand, color, year);
 
@@ -412,7 +410,7 @@ namespace AutoRepairTests
         public void GetAllBookedCars_ReturnCars()
         {
             //prepare
-            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.Black, new DateTime(2001, 01, 01));
+            var _carId = _autoRepairFacade.AddCar(Brand.Audi, Color.White, new DateTime(2001, 01, 01));
             _autoRepairFacade.BookCar(_userId, _carId, _from, _to, out Guid bookingId);
 
             //act

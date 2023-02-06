@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoRepair.Domain;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.Storage
 {
-    interface IBookingStorage
+    public interface IBookingStorage
     {
         bool BookCar(Guid userId, Guid carId, DateTime from, DateTime to, out Guid bookingId);
 
@@ -17,6 +13,5 @@ namespace AutoRepairLibrary
         List<Booking> GetAllBookings();
 
         bool GetCarId(Guid bookingId, out Guid carId);
-
     }
 }

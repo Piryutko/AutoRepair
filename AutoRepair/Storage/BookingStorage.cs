@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AutoRepair.Domain;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.Storage
 {
     public class BookingStorage : IBookingStorage
     {
         public BookingStorage()
         {
-            _bookings = new List<Booking>();
+            _autoRepairDb = new AutoRepairContext();
         }
 
-        private List<Booking> _bookings;
+        private AutoRepairContext _autoRepairDb;
 
         public bool BookCar(Guid userId, Guid carId, DateTime from, DateTime to, out Guid bookingId)
         {
-            var isCarBooked = _bookings.Any(c => c.CarId == carId);
+            var isCarBooked = _autoRepairDb.Bookings.Any(c => c.CarId == carId);
             bookingId = Guid.Empty;
 
             if (isCarBooked)
             {
                 var succeeded = false;
 
-                foreach (var car in _bookings)
+                foreach (var car in GetAllBookings())
                 {
                     if (from < car.From && to <= car.From || from >= car.To && to > car.To)
                     {
@@ -35,7 +33,7 @@ namespace AutoRepairLibrary
                     }
                 }
 
-                if(succeeded)
+                if (succeeded)
                 {
                     bookingId = AddBooking(carId, userId, from, to);
                 }
@@ -49,12 +47,14 @@ namespace AutoRepairLibrary
 
         public bool PickUpCar(Guid bookingId, DateTime from)
         {
-            var isBookedCar = _bookings.Any(r => r.BookingId == bookingId && r.From == from);
+            var isBookedCar = _autoRepairDb.Bookings.Any(r => r.Id == bookingId && r.From == from);
 
             if (isBookedCar)
             {
-                var car = _bookings.SingleOrDefault(c => c.BookingId == bookingId && c.From == from);
+                var car = _autoRepairDb.Bookings.SingleOrDefault(c => c.Id == bookingId && c.From == from);
                 car.GiveCar();
+                _autoRepairDb.Bookings.Update(car);
+                _autoRepairDb.SaveChanges();
                 return isBookedCar;
             }
             return isBookedCar;
@@ -62,41 +62,44 @@ namespace AutoRepairLibrary
 
         public bool ReturnCar(Guid bookingId, DateTime to)
         {
-            var wasСarOnTrip = _bookings.Any(c => c.BookingId == bookingId && c.To == to && c.IsOnTheRoad);
+            var wasСarOnTrip = _autoRepairDb.Bookings.Any(c => c.Id == bookingId && c.To == to && c.IsOnTheRoad);
             if (wasСarOnTrip)
             {
-                var car = _bookings.SingleOrDefault(c => c.BookingId == bookingId && c.To == to && c.IsOnTheRoad);
+                var car = _autoRepairDb.Bookings.SingleOrDefault(c => c.Id == bookingId && c.To == to && c.IsOnTheRoad);
                 RemoveCar(car.CarId);
+                _autoRepairDb.SaveChanges();
                 return true;
             }
             return false;
         }
 
-        private Guid AddBooking(Guid carId, Guid userId,DateTime from, DateTime to)
+        private Guid AddBooking(Guid carId, Guid userId, DateTime from, DateTime to)
         {
             var booking = new Booking(carId, userId, from, to);
-            _bookings.Add(booking);
-            return booking.BookingId;
+            _autoRepairDb.Bookings.Add(booking);
+            _autoRepairDb.SaveChanges();
+            return booking.Id;
         }
 
         private void RemoveCar(Guid carId)
         {
-            var car = _bookings.SingleOrDefault(c => c.CarId == carId);
-            _bookings.Remove(car);
+            var car = _autoRepairDb.Bookings.SingleOrDefault(c => c.CarId == carId);
+            _autoRepairDb.Bookings.Remove(car);
+            _autoRepairDb.SaveChanges();
         }
 
         public List<Booking> GetAllBookings()
         {
-            return _bookings;
+            return _autoRepairDb.Bookings.ToList();
         }
 
         public bool GetCarId(Guid bookingId, out Guid carId)
         {
-            var hasCar = _bookings.Any(u => u.BookingId == bookingId);
+            var hasCar = _autoRepairDb.Bookings.Any(u => u.Id == bookingId);
             carId = Guid.Empty;
             if (hasCar)
             {
-                var car = _bookings.SingleOrDefault(u => u.BookingId == bookingId);
+                var car = _autoRepairDb.Bookings.SingleOrDefault(u => u.Id == bookingId);
                 carId = car.CarId;
                 return hasCar;
             }

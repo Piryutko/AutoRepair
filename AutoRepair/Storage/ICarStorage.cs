@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoRepair.Domain;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.Storage
 {
-    interface ICarStorage
+    public interface ICarStorage
     {
         List<Car> GetAllAvailableCars();
 
@@ -18,18 +14,19 @@ namespace AutoRepairLibrary
 
         List<Truck> GetAllTrucks();
 
-        List<Truck> GetAllAvailableTrucks();
+        List<Car> GetAllAvailableTrucks();
 
-        List<Truck> GetAllTrucksWithSuitableCapacity(double capacity);
+        List<Truck> GetAllTrucksWithSuitableCapacity(int capacity);
 
         List<Limousine> GetAllLimousines();
 
-        List<Limousine> GetAllAvailableLimousines();
+        List<Car> GetAllAvailableLimousines();
 
         List<Limousine> GetAllLimousinesWithBar(bool isThereBar);
 
         Guid AddCar(Brand brand, Color color, DateTime year);
-        Guid AddCar(Brand brand, Color color, DateTime year, double width, double depth, double height);
+
+        Guid AddCar(Brand brand, Color color, DateTime year, int width, int depth, int height);
 
         Guid AddCar(Brand brand, Color color, DateTime year, bool bar);
 

@@ -1,36 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AutoRepair.Domain;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.Storage
 {
     public class UserStorage : IUserStorage
     {
         public UserStorage()
         {
-            Users = new List<User>();
+            _autoRepairDb = new AutoRepairContext();
         }
 
-        public List<User> Users { get; }
+        public AutoRepairContext _autoRepairDb { get; }
 
         public Guid AddUser(string name, int age)
         {
             var user = new User(name, age);
-
-            Users.Add(user);
+            _autoRepairDb.Users.Add(user);
+            _autoRepairDb.SaveChanges();
             return user.Id;
         }
 
         public void DeleteUser(Guid userId)
         {
             var user = GetAllUsers().FirstOrDefault(u => u.Id == userId);
-            Users.Remove(user);
+            _autoRepairDb.Users.Remove(user);
+            _autoRepairDb.SaveChanges();
         }
 
         public List<User> GetAllUsers()
         {
-            return Users;
+            return _autoRepairDb.Users.ToList();
         }
-
     }
 }

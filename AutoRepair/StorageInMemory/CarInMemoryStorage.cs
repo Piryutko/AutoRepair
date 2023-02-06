@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AutoRepair.Domain;
+using AutoRepair.Storage;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.StorageInMemory
 {
-    public class CarStorage : ICarStorage
+    public class CarInMemoryStorage : ICarStorage
     {
-        public CarStorage()
+        public CarInMemoryStorage()
         {
             _cars = new List<Car>();
         }
@@ -24,16 +23,15 @@ namespace AutoRepairLibrary
             return _cars.Where(car => car is Truck).Select(c => c as Truck).ToList();
         }
 
-        public List<Truck> GetAllAvailableTrucks()
+        public List<Car> GetAllAvailableTrucks()
         {
-            var trucks = GetAllTrucks().Where(t => !t.IsCarBooked).ToList();
-
+            var trucks = GetAllTrucks().Where(t => !t.IsCarBooked).Select(c => c as Car).ToList();
             return trucks;
         }
 
-        public List<Truck> GetAllTrucksWithSuitableCapacity(double minCapacity)
+        public List<Truck> GetAllTrucksWithSuitableCapacity(int minCapacity)
         {
-            var trucks = GetAllAvailableTrucks().Where(t => t.TrunkSize >= minCapacity).ToList();
+            var trucks = GetAllTrucks().Where(t => t.TrunkSize >= minCapacity).ToList();
             return trucks;
         }
 
@@ -42,9 +40,9 @@ namespace AutoRepairLibrary
             return _cars.Where(limousines => limousines is Limousine).Select(l => l as Limousine).ToList();
         }
 
-        public List<Limousine> GetAllAvailableLimousines()
+        public List<Car> GetAllAvailableLimousines()
         {
-            var lumousines = GetAllLimousines().Where(l => !l.IsCarBooked).ToList();
+            var lumousines = GetAllLimousines().Where(l => !l.IsCarBooked).Select(c => c as Car).ToList();
             return lumousines;
         }
 
@@ -78,7 +76,7 @@ namespace AutoRepairLibrary
             return car.Id;
         }
 
-        public Guid AddCar(Brand brand, Color color, DateTime year, double width, double depth, double height)
+        public Guid AddCar(Brand brand, Color color, DateTime year, int width, int depth, int height)
         {
             var truck = new Truck(brand, color, year, width, depth, height);
             _cars.Add(truck);
@@ -98,7 +96,7 @@ namespace AutoRepairLibrary
 
             if (isCarHere)
             {
-                var car = _cars.SingleOrDefault(c => c.Id == carId);
+                var car = _cars.Single(c => c.Id == carId);
                 _cars.Remove(car);
                 return isCarHere;
             }

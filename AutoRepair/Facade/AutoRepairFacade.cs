@@ -1,23 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AutoRepair.Domain;
+using AutoRepair.Storage;
 
-namespace AutoRepairLibrary
+namespace AutoRepair.Facade
 {
     public class AutoRepairFacade : IAutoRepairFacade
     {
-        public AutoRepairFacade(CarStorage carStorage,BookingStorage bookStorage, UserStorage userStorage)
+        public AutoRepairFacade(ICarStorage carStorage, IBookingStorage bookStorage, IUserStorage userStorage)
         {
             _carStorage = carStorage;
             _bookingStorage = bookStorage;
             _userStorage = userStorage;
         }
 
-        private CarStorage _carStorage;
+        private ICarStorage _carStorage;
 
-        private BookingStorage _bookingStorage;
+        private IBookingStorage _bookingStorage;
 
-        private UserStorage _userStorage;
+        private IUserStorage _userStorage;
 
         public Guid CreateUser(string name, int age)
         {
@@ -34,9 +33,9 @@ namespace AutoRepairLibrary
             return _carStorage.AddCar(brand, color, year);
         }
 
-        public Guid AddCar(Brand brand, Color color, DateTime year, double width, double depth, double height)
+        public Guid AddCar(Brand brand, Color color, DateTime year, int width, int depth, int height)
         {
-            return _carStorage.AddCar(brand, color, year,width, depth, height);
+            return _carStorage.AddCar(brand, color, year, width, depth, height);
         }
 
         public Guid AddCar(Brand brand, Color color, DateTime year, bool bar)
@@ -59,22 +58,22 @@ namespace AutoRepairLibrary
             return _carStorage.GetAllTrucks();
         }
 
-        public List<Truck> GetAllAvailableTrucks()
+        public List<Car> GetAllAvailableTrucks()
         {
             return _carStorage.GetAllAvailableTrucks();
         }
 
-        public List<Truck> GetAllTruckWithSuitableCapacity(double capacity)
+        public List<Truck> GetAllTruckWithSuitableCapacity(int capacity)
         {
             return _carStorage.GetAllTrucksWithSuitableCapacity(capacity);
         }
-        
+
         public List<Limousine> GetAllLimousines()
         {
             return _carStorage.GetAllLimousines();
         }
 
-        public List<Limousine> GetAllAvailableLimousines()
+        public List<Car> GetAllAvailableLimousines()
         {
             return _carStorage.GetAllAvailableLimousines();
         }
@@ -96,7 +95,7 @@ namespace AutoRepairLibrary
 
         public List<Car> GetAllCars()
         {
-           return _carStorage.GetAllCars();
+            return _carStorage.GetAllCars();
         }
 
         public bool BookCar(Guid userId, Guid carId, DateTime from, DateTime to, out Guid bookingId)
@@ -132,6 +131,5 @@ namespace AutoRepairLibrary
 
             return result;
         }
-
     }
 }
